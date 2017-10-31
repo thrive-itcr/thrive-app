@@ -1,0 +1,11 @@
+Dockerfile
+sonar-project.properties
+devops.config
+.tags
+.tags1
+.sonar
+.git
+.DS_Store
+.gitignore
+.dockerignore
+.idea

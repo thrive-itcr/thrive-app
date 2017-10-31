@@ -1,0 +1,31 @@
+{
+  "name": "thrive",
+  "authors": [
+    "Brion Sarachan <sarachan@ge.com>"
+  ],
+  "description": "Tumor Heterogeneity Research Interactive Visualization Environment",
+  "main": "",
+  "license": "BSD-3-Clause",
+  "homepage": "https://github.com/thrive-itcr/thrive-app",
+  "private": true,
+  "dependencies": {
+    "oip-frontend": "https://github.build.ge.com/rt106/rt106-frontend.git#master"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "i3th-server",
+    "Dockerfile",
+    "entrypoint.sh",
+    "docker-compose.yml",
+    "devops.config",
+    "sonic.properties",
+    "packages.json",
+    "test",
+    "tests"
+  ],
+  "resolutions": {
+    "jquery": "~2.2.0"
+  }
+}

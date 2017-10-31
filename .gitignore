@@ -1,0 +1,9 @@
+rt106-app/bower_components/*
+node_modules/*
+.idea/*
+*.iml
+.tags*
+.DS_Store
+.env
+check_bower.js
+npm-debug.log

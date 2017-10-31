@@ -1,0 +1,363 @@
+<!-- Copyright (c) General Electric Company, 2017.  All rights reserved. -->
+<!DOCTYPE html>
+<html lang="en" ng-app = "rt106">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>THRIVE for Tumor Heterogeneity</title>
+
+    <link href="css/thrive-styles.css" rel="stylesheet" type="text/css">
+    <link href="bower_components/oip-frontend/rt106-app/css/rt106-styles.css" rel="stylesheet" type="text/css">
+
+    <!-- THIRD-PARTY STYLE SHEETS -->
+    <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="bower_components/ng-scrollbar/dist/ng-scrollbar.css" rel="stylesheet" type="text/css">
+    <link href="bower_components/angular-ui-grid/ui-grid.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+       <div id="wrapper" ng-controller="thriveController">
+
+           <!-- NAVIGATION BAR -->
+
+           <nav class="navbar">
+               <h1 class="navbar-brand mb-0">Tumor Heterogeneity Research Interactive Visualization Environment</h1>
+           </nav>
+
+           <!-- SLIDES, ALGORITHMS, PARAMETERS, VIEWER -->
+
+           <div class="container-fluid fill">
+               <div class="row">
+
+                   <div class="col-lg-2 col-md-4 rt106-component fixed-height-tall">
+
+                       <!-- SLIDE / REGION / CHANNEL SELECTION -->
+
+                       <h4>Slides</h4>
+
+                       <div id="slides" class="selector">
+                           <select ng-model="selectedSlide" ng-change="clickSlide();updatePipelineList()">
+                               <option ng-repeat="slide in slides" value="{{ slide }}">{{ slide }}</option>
+                           </select>
+                       </div>
+                       <br>
+
+                       <h4>Regions</h4>
+
+                       <div id="regions" class="selector">
+                           <select ng-model="selectedRegion" ng-change="clickRegion();updatePipelineList()" >
+                               <option ng-repeat="region in regions" value="{{ region }}">{{ region }}</option>
+                           </select>
+                       </div>
+                       <br>
+
+                       <h4>Channels</h4>
+
+                       <div id="channels" class="selector">
+                           <select ng-model="selectedChannel" ng-change="clickChannel();">
+                               <option ng-repeat="channel in channels" value="{{ channel }}">{{ channel }}</option>
+                           </select>
+                       </div>
+                       <br>
+
+                       <!-- END SLIDE / REGION / CHANNEL SELECTION -->
+
+                       <!-- ALGORITHMS -->
+
+                       <div ng-init="highlightAlgos=[]">
+
+                           <h4>Segmentation Algorithms</h4>
+
+                           <div class="algsection" ng-scrollbar rebuild-on="rebuild:me">
+                               <ul ng-repeat="algo in algorithmsSegmentation"
+                                   ng-click="$parent.highlightAlgos[0][$index]=!$parent.highlightAlgos[0][$index];clickPathologyAlgo(algo,highlightAlgos,0,$index)";
+                                   ng-class="{'tr-active':$parent.highlightAlgos[0][$index]==true}">
+                                   <li>{{ algo.name }}</li>
+                               </ul>
+
+                           </div>
+
+                           <h4>Quantitation Algorithms</h4>
+
+                           <div class="algsection" ng-scrollbar rebuild-on="rebuild:me">
+                               <ul ng-repeat="algo in algorithmsQuantitation"
+                                   ng-click="$parent.highlightAlgos[1][$index]=!$parent.highlightAlgos[1][$index];clickPathologyAlgo(algo,highlightAlgos,1,$index)";
+                                   ng-class="{'tr-active':$parent.highlightAlgos[1][$index]==true}">
+                                   <li>{{ algo.name }}</li>
+                               </ul>
+
+                           </div>
+
+                           <h4>Heterogeneity Algorithms</h4>
+
+                           <div class="algsection" ng-scrollbar rebuild-on="rebuild:me">
+                               <ul ng-repeat="algo in algorithmsHeterogeneity"
+                                   ng-click="$parent.highlightAlgos[2][$index]=!$parent.highlightAlgos[2][$index];clickPathologyAlgo(algo,highlightAlgos,2,$index)";
+                                   ng-class="{'tr-active':$parent.highlightAlgos[2][$index]==true}">
+                                   <li>{{ algo.name }}</li>
+                               </ul>
+                           </div>
+
+                       </div>
+
+                       <!-- END ALGORITHMS -->
+
+                   </div>
+
+                   <div class="col-lg-2 col-md-4 rt106-component fixed-height-tall">
+
+                       <!-- PIPELINES -->
+
+                       <h4>Pipeline:  {{ selectedPipeline }}</h4>
+
+                       <br>
+
+                       <h5>Existing Pipelines:</h5>
+                       <div id="pipelines" class="selector">
+                           <select ng-model="selectedPipeline" ng-change="clickPipeline();">
+                               <option ng-repeat="pipeline in pipelines" value="{{ pipeline }}">{{ pipeline }}</option>
+                           </select>
+                       </div>
+                       <br>
+
+                       <h5>New Pipeline: </h5>
+                       <input type="text" ng-model="newPipelineName">
+                       <button type="button"class="btn btn-primary btn-sm" ng-click="newPipelineID()">New</button>
+
+                       <br><br>
+
+                       <h5>Force Overwrite?
+                           <input type="checkbox" ng-model="forceOverwrite">
+                       </h5>
+
+                       <!-- END PIPELINES -->
+
+                       <!-- EXECUTE BUTTON -->
+
+                       <div id="execbutton">
+                           <button type="button" class="btn btn-primary" ng-click="requestAlgoRun()">Execute!</button>
+                       </div>
+
+                       <!-- END EXECUTE BUTTON -->
+
+                   </div>
+
+
+                   <div class="col-lg-2 col-md-4 rt106-component fixed-height-tall">
+
+                       <!-- PARAMETERS -->
+
+                       <!--<h2>{{ selectedAlgo.split("-")[0] }}</h2>-->
+
+                       <section class="fixed-smaller-height" ng-scrollbar rebuild-on="rebuild:me">
+                           <h4>Algorithm Parameters</h4>
+                           <table class="table">
+                               <tr>
+                                   <th>Param</th>
+                                   <th>Value</th>
+                                   <th>Include?</th>
+                               </tr>
+                               <tr ng-repeat="param in selectedParameters">
+                                   <td>{{ param.label }}</td>
+                                   <td><input type="{{param.widgetType}}" ng-model="param.default"></td>
+                                   <td><input type="checkbox" ng-hide="param.required" ng-model="param.include"></td>
+                               </tr>
+                           </table>
+                       </section>
+
+                       <!-- END PARAMETERS -->
+
+                   </div>
+
+
+
+                   <div class="col-lg-1 col-md-2 rt106-component fixed-height-tall">
+
+                       <!-- IMAGE TOOLS -->
+
+                       <div id="imagecontrols">
+                           <!-- menu of choices -->
+
+                           <!-- <div class="col-xs-4"> -->
+                           <ul class="list-group">
+                               <a id="enableWindowLevelTool" class="list-group-item">WW/WC</a>
+                               <a id="pan" class="list-group-item">Pan</a>
+                               <a id="zoom" class="list-group-item">Zoom</a>
+                               <a id="rectangleroi" class="list-group-item">Rectangle ROI</a>
+
+                       <!-- IMAGE TOOLS -->
+
+                       <!--  DISPLAY SOME SAMPLE DATA -->
+
+                               <br>
+                               {{ rectangleInfo }}
+                               <br>
+                               {{ cellsInfo }}
+                               <br>
+                               <div id="cellinfo">
+                                   CD3: {{ CD3 }}
+                                   <br>
+                                   CD8: {{ CD8 }}
+                                   <br>
+                                   CD20: {{ CD20 }}
+                                   <br>
+                                   CD68: {{ CD68 }}
+                                   <br>
+                                   Diversity: {{ diversity }}
+                               </div>
+
+                       <!--  DISPLAY SOME SAMPLE DATA -->
+
+                           </ul>
+                           <br/>
+
+                       </div>
+
+                   </div>
+
+                   <div class="col-lg-5 col-md-10 rt106-component fixed-height-tall">
+
+                       <section class="viewersection">
+                           <div id="viewers" config-viewers number-of-viewers="6" viewer-width="600px" viewer-height="600px" ng-click="clickOnViewer()">
+                           </div>
+                       </section>
+                   </div>
+
+
+               </div>
+           </div>
+
+           <!-- END SLIDES, ALGORITHMS, PARAMETERS, VIEWER -->
+
+           <!-- PLOTS -->
+
+           <div class="container-fluid">
+               <div class="row">
+                   <div class="col-lg-6 col-md-12 rt106-component fixed-height">
+                       <section class="dataplotsection">
+                           <div id="boxPlot"></div>
+                       </section>
+                   </div>
+                   <div class="col-lg-6 col-md-12 rt106-component fixed-height">
+                       <section class="histogramsection">
+                           <div id="histogram"></div>
+                       </section>
+                   </div>
+               </div>
+           </div>
+
+           <!-- END PLOTS -->
+
+           <!-- EXECUTION HISTORY, DATA TABLE -->
+
+           <div class="container-fluid">
+               <div class="row">
+                   <div class="col-lg-6 col-md-12 rt106-component fixed-height">
+                       <h4>Execution History</h4>
+                       <section class="fixed-smaller-height" ng-scrollbar rebuild-on="rebuild:me">
+                           <table class="table">
+                               <tr>
+                                   <th>Algorithm</th>
+                                   <th>Start Time</th>
+                                   <th>Status</th>
+                               </tr>
+                               <tr ng-repeat-start="execItem in executionList" ng-click="expandResult = !expandResult;clickResult(execItem,expandResult)" ng-class="{'tr-active':expandResult==true}">
+                                   <td>{{ execItem.analyticName }}</td>
+                                   <td>{{ execItem.requestTime | date : 'MMM d, yyyy h:mm a' }}</td>
+                                   <td>{{ execItem.status }}</td>
+                               </tr>
+                               <tr ng-repeat-end ng-show="expandResult">
+                                   <td colspan="3">
+                                       <h5>Details</h5>
+                                       <table class="table">
+                                           <tr>
+                                               <th>Source</th>
+                                               <th>Result</th>
+                                               <th>Value</th>
+                                           </tr>
+                                           <!-- Iterate through the result list here. -->
+                                           <tr ng-repeat="detailItem in execItem.details">
+                                               <td>{{ detailItem.source }}</td>
+                                               <td>{{ detailItem.name }}</td>
+                                               <td>{{ detailItem.value }}</td>
+                                           </tr>
+                                       </table>
+                                   </td>
+                               </tr>
+                           </table>
+                       </section>
+                   </div>
+
+                   <div class="col-lg-6 col-md-12 rt106-component fixed-height">
+                       <div ui-grid="gridOptions" ui-grid-selection class="myGrid fixed-smaller-height"></div>
+                       <!--{{ selectedGridRow }}-->
+                   </div>
+               </div>
+           </div>
+
+           <!-- END EXECUTION HISTORY, DATA TABLE -->
+
+           <!-- ALGORITHM FEEDBACK -->
+
+           <div class="container-fluid">
+               <div class="row">
+                   <div class="col-md-12 rt106-component fixed-height">
+                       <h3>Algorithm Run Evaluation</h3>
+                       This algorithm run is:
+                       <form>
+                           <input type="radio" ng-model="algoEval[execItem.executionId]" value="notyet" checked>not yet evaluated<br>
+                           <input type="radio" ng-model="algoEval[execItem.executionId]" value="nearly perfect">nearly perfect<br>
+                           <input type="radio" ng-model="algoEval[execItem.executionId]" value="acceptable">acceptable<br>
+                           <input type="radio" ng-model="algoEval[execItem.executionId]" value="barely acceptable">barely acceptable<br>
+                           <input type="radio" ng-model="algoEval[execItem.executionId]" value="not acceptable">not acceptable<br>
+                       </form>
+                       Other comments: <input type="text" ng-model='algoComments[execItem.executionId]' size="80"><br>
+                       <button type="button" class="btn btn-primary" ng-click="saveEvaluationToDB(execItem.executionId)">Submit Evaluation</button>
+                   </div>
+               </div>
+           </div>
+
+           <!-- END ALGORITHM FEEDBACK -->
+
+       </div>
+
+       <!-- THIRD-PARTY SCRIPTS -->
+       <script src="bower_components/jquery/dist/jquery.min.js"></script>
+       <script src="bower_components/tether/dist/js/tether.min.js"></script>
+       <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+       <script src="bower_components/angular/angular.min.js"></script>
+       <script src="bower_components/angular-ui-grid/ui-grid.min.js"></script>
+       <script src="bower_components/plotlyjs/plotly.js"></script>
+       <script src="bower_components/ng-scrollbar/dist/ng-scrollbar.min.js"></script>
+       <script src="bower_components/cornerstone/dist/cornerstone.js"></script>
+       <script src="bower_components/cornerstoneMath/dist/cornerstoneMath.min.js"></script>
+       <script src="bower_components/cornerstoneTools/dist/cornerstoneTools.js"></script>
+       <script src="bower_components/dicomParser/dist/dicomParser.min.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/third-party/jpx.min.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/third-party/cornerstoneWADOImageLoader.min.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/third-party/cornerstoneHTTPDICOMImageLoader.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/third-party/tiff.min.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/third-party/tiff16.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/third-party/tiffImageLoader.js"></script>
+
+       <!-- OPEN INNOVATION PLATFORM SCRIPTS -->
+       <script src="config.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/js/rt106.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/services/utilityFns.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/directives/configViewers.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/services/cohortFactory.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/services/pathologyService.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/services/analyticsFactory.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/services/dynamicDisplayService.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/services/dynamicControlService.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/services/executionService.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/services/alarmService.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/js/imageViewers.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/js/cornerstoneLayers.js"></script>
+       <script src="bower_components/oip-frontend/rt106-app/js/overlayTools.js"></script>
+
+       <!-- THIS APPLICATION'S CONTROLLER -->
+       <script src="controllers/thriveController.js"></script>
+
+    </body>
+</html>

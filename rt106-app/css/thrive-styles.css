@@ -1,0 +1,62 @@
+/* Copyright (c) General Electric Company, 2017.  All rights reserved. */
+
+@charset "UTF-8";
+
+.navbar {
+    background-color:rgba(21,31,33,0.5);
+    border-bottom:1px solid #dedede;
+}
+
+.navbar .navbar-brand {
+    color: #d1d1d1;
+    font-size: x-large;
+}
+
+.selector {
+    height: 30px;
+    width: 240px;
+    padding: 5px;
+}
+
+.viewersection {
+    float: left;
+    clear: left;
+    width: 100%;
+    background-color: white;
+    margin: 10px;
+    height: 725px;
+}
+
+.fixed-height-tall {
+    min-height: 750px;
+    max-height: 750px;
+}
+
+.fixed-smaller-height {
+    min-height: 700px;
+    max-height: 700px;
+    height: 700px;
+}
+
+/* For box plots */
+/*
+.dataplotsection {
+    float: left;
+    clear: left;
+    width: 40%;
+    height: 450px;
+    margin: 5px;
+}
+*/
+
+/* For box plots */
+/*
+.histogramsection {
+    float: left;
+    /*clear: left;*/
+/*    width: 40%;
+    height: 450px;
+    margin: 5px;
+}
+*/
+

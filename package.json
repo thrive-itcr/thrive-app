@@ -1,0 +1,27 @@
+{
+  "name": "thrive",
+  "version": "1.0.0",
+  "description": "Tumor Heterogeneity Research Interactive Visualization Environment",
+  "homepage": "https://github.com/thrive-itcr/thrive-app",
+  "main": "rt106-server/rt106-server.js",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "express": "^4.15.4",
+    "request": "^2.81.0",
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "bower": "^1.8.0"
+  },
+  "scripts": {
+    "start": "node rt106-server/rt106-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thrive-itcr/thrive-app.git"
+  },
+  "author": "Brion Sarachan",
+  "license": "BSD-3-Clause"
+}
+
