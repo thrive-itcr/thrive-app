@@ -59,41 +59,41 @@ services:
     - 81:8306
     environment:
       SERVICE_NAME: thrive
-    volumes:
-      - "${DEV_FRONTEND_DIR}:/rt106"
+#    volumes:
+#      - "${DEV_FRONTEND_DIR}:/rt106"
   # analytics can scale (but we cannot expose the port to the host, but still to list a port for Registrator to recognize)
   #   the DNS in Consul will provide a unique port number to route through
-  WaveletNucleiSegmentation:
-    image: rt106/wavelet-nuclei-segmentation:latest
+  wavelet-nuclei-segmentation:
+    image: rt106/rt106-wavelet-nuclei-segmentation:latest
     ports:
     - 7106
     environment:
       MSG_SYSTEM: amqp
-      SERVICE_NAME: WaveletNucleiSegmentation--v1_0_0
+      SERVICE_NAME: wavelet-nuclei-segmentation--v1_0_0
       SERVICE_TAGS: analytic
-  WholeCellSegmentation:
-    image: rt106/whole-cell-segmentation:latest
+#  WholeCellSegmentation:
+#    image: rt106/whole-cell-segmentation:latest
+#    ports:
+#    - 7106
+#    environment:
+#      MSG_SYSTEM: amqp
+#      SERVICE_NAME: WholeCellSegmentation--v1_0_0
+#      SERVICE_TAGS: analytic
+  multi-compartment-cell-quantification:
+    image: rt106/multi-compartment-cell-quantification:latest
     ports:
     - 7106
     environment:
       MSG_SYSTEM: amqp
-      SERVICE_NAME: WholeCellSegmentation--v1_0_0
+      SERVICE_NAME: multi-compartment-cell-quantification--v1_0_0
       SERVICE_TAGS: analytic
-  MultiCompartmentCellQuant:
-    image: rt106/multicompartment-cell-quant:latest
-    ports:
-    - 7106
-    environment:
-      MSG_SYSTEM: amqp
-      SERVICE_NAME: MultiCompartmentCellQuant--v1_0_0
-      SERVICE_TAGS: analytic
-  HeterogeneityMetrics:
+  heterogeneity-metrics:
     image: rt106/heterogeneity-metrics:latest
     ports:
     - 7106
     environment:
       MSG_SYSTEM: amqp
-      SERVICE_NAME: HeterogeneityMetrics--v1_0_0
+      SERVICE_NAME: heterogeneity-metrics--v1_0_0
       SERVICE_TAGS: analytic
 
 volumes:
