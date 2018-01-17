@@ -3,11 +3,10 @@
 
 echo ""
 echo "Removing web image."
-docker rmi thrive:latest
+docker rmi thrive/thrive-app
 
 echo ""
 echo "Building web image."
-docker build -t thrive:latest --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy  --build-arg no_proxy=$no_proxy .
-
+docker build -t thrive/thrive-app  --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy  --build-arg no_proxy=$no_proxy .
 echo ""
 docker images

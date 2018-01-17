@@ -54,7 +54,7 @@ services:
     - "rabbitmq"
   # web server for seed app can scale if placed behind a load balancer
   thrive:
-    image: thrive:latest
+    image: thrive/thrive-app:latest
     ports:
     - 81:8306
     environment:
@@ -80,7 +80,7 @@ services:
 #      SERVICE_NAME: WholeCellSegmentation--v1_0_0
 #      SERVICE_TAGS: analytic
   multi-compartment-cell-quantification:
-    image: rt106/multi-compartment-cell-quantification:latest
+    image: thrive/multi-compartment-cell-quantification:latest
     ports:
     - 7106
     environment:
@@ -88,7 +88,7 @@ services:
       SERVICE_NAME: multi-compartment-cell-quantification--v1_0_0
       SERVICE_TAGS: analytic
   heterogeneity-metrics:
-    image: rt106/heterogeneity-metrics:latest
+    image: thrive/heterogeneity-metrics:latest
     ports:
     - 7106
     environment:
