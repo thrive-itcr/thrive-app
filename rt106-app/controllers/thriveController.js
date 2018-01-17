@@ -40,16 +40,16 @@
         $scope.selectedCells = "";
         $scope.cellsInfo = "";
 
-        // Hard-coded for some specific biomarkers.
-        $scope.CD3 = 0;
-        $scope.CD8 = 0;
-        $scope.CD20 = 0;
-        $scope.CD68 = 0;
+        // Hard-coded for some specific biomarkers.  TODO:  Make biomarkers selectable by user.
+        $scope.S6 = 0;
+        $scope.pS6235 = 0;
+        $scope.pERK = 0;
+        $scope.p4EBP1 = 0;
         $scope.diversity = 0;
-        $scope.CD3list=[];
-        $scope.CD8list=[];
-        $scope.CD20list=[];
-        $scope.CD68list=[];
+        $scope.S6list=[];
+        $scope.pS6235list=[];
+        $scope.pERKlist=[];
+        $scope.p4EBP1list=[];
         $scope.diversityList=[];
 
         /*
@@ -253,6 +253,7 @@
         }
 
         $scope.clickResult = function(execItem,expandResult) {
+            console.log("In clickResult, execItem is " + JSON.stringify(execItem));
             utilityFns.updateScroll($scope);
             if (expandResult) {
                 $scope.selectedExecution = execItem;
@@ -260,9 +261,10 @@
                 var index = utilityFns.getObjectIndexByValue($scope.algorithms, 'name', execItem.analyticName);
                 // Get the display structure for that analytic.
                 var displayStruct = $scope.algorithms[index].display;
+                // TODO:  This test should be based on classification of algorithm rather than name.
                 if (execItem.analyticName == "CellQuantification--v1_0_0" ||
-                                                    execItem.analyticName == "MultiCompartmentCellQuant--v1_0_0" ||
-                                                    execItem.analyticName == "HeterogeneityMetrics--v1_0_0") {
+                    execItem.analyticName == "multi-compartment-cell-quantification--v1_0_0" ||
+                    execItem.analyticName == "heterogeneity-metrics--v1_0_0") {
                     var cellMetrics = execItem.result.cellMetrics;
                     // Get the cell quantification data from cellMetrics.
                     var uriString = Rt106_SERVER_URL + "/v1/dataconvert/csvtojson/v1/pathology/datafile" + cellMetrics;
@@ -333,8 +335,8 @@
             $scope.frame = $("#imageWrapper1")[0];
             $scope.element = cornerstoneLayers.getImageElement($scope.frame);
             //$scope.rectangleInfo = "no info now";
-            var rectangleToolState = cornerstoneTools.getToolState($scope.element, 'rectangleRoi');
             // TODO: catch errors in the lines below, which will happen if there is no rectangle.
+            var rectangleToolState = cornerstoneTools.getToolState($scope.element, 'rectangleRoi');
             var startX = rectangleToolState.data[0].handles.start.x;
             var startY = rectangleToolState.data[0].handles.start.y;
             var endX   = rectangleToolState.data[0].handles.end.x;
@@ -347,17 +349,17 @@
             var cellX, cellY, cellID;
             $scope.selectedCells = "";
             var count = 0;
-            // Hard coded for some specific biomarkers:  CD3, CD8, CD20, CD68.
-            var CD3num, CD8num, CD20num, CD68num, diversityNum;
-            var CD3sum = 0;
-            var CD8sum = 0;
-            var CD20sum = 0;
-            var CD68sum = 0;
+            // Hard coded for some specific biomarkers:  S6, pS6235, pERK, p4EBP1.
+            var S6num, pS6235num, pERKnum, p4EBP1num, diversityNum;
+            var S6sum = 0;
+            var pS6235sum = 0;
+            var pERKsum = 0;
+            var p4EBP1sum = 0;
             var diversitySum = 0;
-            $scope.CD3list = [];
-            $scope.CD8list = [];
-            $scope.CD20list = [];
-            $scope.CD68list = [];
+            $scope.S6list = [];
+            $scope.pS6235list = [];
+            $scope.pERKlist = [];
+            $scope.p4EBP1list = [];
             $scope.diversityList = [];
             for (var i=0; i<$scope.gridData.length; i++) {
                 // The cell values should be numbers already, but in case they are not...
@@ -367,21 +369,21 @@
                 if (startX < cellX && cellX < endX && startY < cellY && cellY < endY) {
                     $scope.selectedCells = $scope.selectedCells + cellID + ",";
                     count = count + 1;
-                    CD3num = Number($scope.gridData[i].CD3_Nuc_Mean);
-                    CD3sum  += CD3num;
-                    $scope.CD3list.push(CD3num);
+                    S6num = Number($scope.gridData[i].S6_Nuc_Mean);
+                    S6sum  += S6num;
+                    $scope.S6list.push(S6num);
 
-                    CD8num = Number($scope.gridData[i].CD8_Nuc_Mean);
-                    CD8sum  += CD8num;
-                    $scope.CD8list.push(CD8num);
+                    pS6235num = Number($scope.gridData[i].pS6235_Nuc_Mean);
+                    pS6235sum  += pS6235num;
+                    $scope.pS6235list.push(pS6235num);
 
-                    CD20num = Number($scope.gridData[i].CD20_Nuc_Mean);
-                    CD20sum += CD20num;
-                    $scope.CD20list.push(CD20num);
+                    pERKnum = Number($scope.gridData[i].pERK_Nuc_Mean);
+                    pERKsum += pERKnum;
+                    $scope.pERKlist.push(pERKnum);
 
-                    CD68num = Number($scope.gridData[i].CD68_Nuc_Mean);
-                    CD68sum += CD68num;
-                    $scope.CD68list.push(CD68num);
+                    p4EBP1num = Number($scope.gridData[i].p4EBP1_Nuc_Mean);
+                    p4EBP1sum += p4EBP1num;
+                    $scope.p4EBP1list.push(p4EBP1num);
 
                     diversityNum = Number($scope.gridData[i].Diversity);
                     if (!isNaN(diversityNum)) {
@@ -390,10 +392,10 @@
                     }
                 }
             }
-            $scope.CD3  = Math.round(CD3sum / count);
-            $scope.CD8  = Math.round(CD8sum / count);
-            $scope.CD20 = Math.round(CD20sum / count);
-            $scope.CD68 = Math.round(CD68sum / count);
+            $scope.S6  = Math.round(S6sum / count);
+            $scope.pS6235  = Math.round(pS6235sum / count);
+            $scope.pERK = Math.round(pERKsum / count);
+            $scope.p4EBP1 = Math.round(p4EBP1sum / count);
             $scope.diversity = Math.round(10000 * diversitySum / count) / 10000; // Round to 3 decimal places.
             $scope.cellsInfo = "There are " + count + " selected cells.";
             drawPlots();
@@ -438,54 +440,54 @@
 
         // FUNCTIONS FOR BIOMARKER BOX PLOTS
 
-        $scope.CD3list=[];
-        $scope.CD8list=[];
-        $scope.CD20list=[];
-        $scope.CD68list=[];
+        $scope.S6list=[];
+        $scope.pS6235list=[];
+        $scope.pERKlist=[];
+        $scope.p4EBP1list=[];
 
         /*
         // Box plot sample data for testing
         for (var i = 0; i < 50; i ++)
         {
-            $scope.CD3list[i] = Math.random();
-            $scope.CD8list[i] = 2*Math.random();
-            $scope.CD20list[i] = 5*Math.random();
-            $scope.CD68list[i] = 10*Math.random();
+            $scope.S6list[i] = Math.random();
+            $scope.pS6235list[i] = 2*Math.random();
+            $scope.pERKlist[i] = 5*Math.random();
+            $scope.p4EBP1list[i] = 10*Math.random();
         }
         */
 
         function drawPlots() {
-            console.log("quartiles for CD3: ");
-            printQuartiles($scope.CD3list);
-            var CD3points = {
-                y: $scope.CD3list,
+            console.log("quartiles for S6: ");
+            printQuartiles($scope.S6list);
+            var S6points = {
+                y: $scope.S6list,
                 type: 'box',
-                name: 'CD3',
+                name: 'S6',
                 boxpoints: false
             };
 
-            var CD8points = {
-                y: $scope.CD8list,
+            var pS6235points = {
+                y: $scope.pS6235list,
                 type: 'box',
-                name: 'CD8',
+                name: 'pS6235',
                 boxpoints: false
             };
 
-            var CD20points = {
-                y: $scope.CD20list,
+            var pERKpoints = {
+                y: $scope.pERKlist,
                 type: 'box',
-                name: 'CD20',
+                name: 'pERK',
                 boxpoints: false
             };
 
-            var CD68points = {
-                y: $scope.CD68list,
+            var p4EBP1points = {
+                y: $scope.p4EBP1list,
                 type: 'box',
-                name: 'CD68',
+                name: 'p4EBP1',
                 boxpoints: false
             };
 
-            var data = [CD3points, CD8points, CD20points, CD68points];
+            var data = [S6points, pS6235points, pERKpoints, p4EBP1points];
 
             var layout = {
                 title: 'Marker Expression within ROI',
