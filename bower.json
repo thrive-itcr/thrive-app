@@ -14,12 +14,10 @@
   "ignore": [
     "**/.*",
     "node_modules",
-    "bower_components",
-    "i3th-server",
+    "rt106-app/bower_components",
     "Dockerfile",
     "entrypoint.sh",
     "docker-compose.yml",
-    "devops.config",
     "sonic.properties",
     "packages.json",
     "test",
