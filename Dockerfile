@@ -21,7 +21,7 @@ RUN chown -R rt106:rt106 /rt106
 WORKDIR /rt106
 
 # do everything else as this user
-USER rt106:rt106
+#USER rt106:rt106
 
 # install package dependencies
 RUN npm install --production
