@@ -15,13 +15,16 @@ RUN chown rt106:rt106 /rt106
 
 # install the custom code for the app (COPY does NOT set ownership based on USER?)
 COPY . /rt106
+
+RUN chmod a+x /rt106/entrypoint.sh
+
 RUN chown -R rt106:rt106 /rt106
 
 # set the working directory
 WORKDIR /rt106
 
 # do everything else as this user
-#USER rt106:rt106
+USER rt106:rt106
 
 # install package dependencies
 RUN npm install --production
