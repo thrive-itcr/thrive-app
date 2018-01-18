@@ -1,5 +1,5 @@
 {
-  "name": "thrive",
+  "name": "thrive-app",
   "authors": [
     "Brion Sarachan <sarachan@ge.com>"
   ],
@@ -9,7 +9,7 @@
   "homepage": "https://github.com/thrive-itcr/thrive-app",
   "private": true,
   "dependencies": {
-    "oip-frontend": "https://github.com/rt106/rt106-frontend.git#master"
+    "rt106-frontend": "https://github.com/rt106/rt106-frontend.git#master"
   },
   "ignore": [
     "**/.*",
