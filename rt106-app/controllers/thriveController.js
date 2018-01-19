@@ -264,7 +264,7 @@
                 // TODO:  This test should be based on classification of algorithm rather than name.
                 if (execItem.analyticName == "CellQuantification--v1_0_0" ||
                     execItem.analyticName == "multi-compartment-cell-quantification--v1_0_0" ||
-                    execItem.analyticName == "heterogeneity-metrics--v1_0_0") {
+                    execItem.analyticName == "simple-heterogeneity-metrics--v1_0_0") {
                     var cellMetrics = execItem.result.cellMetrics;
                     // Get the cell quantification data from cellMetrics.
                     var uriString = Rt106_SERVER_URL + "/v1/dataconvert/csvtojson/v1/pathology/datafile" + cellMetrics;
