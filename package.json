@@ -7,6 +7,8 @@
   "dependencies": {
     "cors": "^2.8.4",
     "express": "^4.15.4",
+    "gulp": "^3.9.1",
+    "gulp-ng-constant": "^1.2.0",
     "request": "^2.81.0",
     "winston": "^2.3.1"
   },
@@ -24,4 +26,3 @@
   "author": "Brion Sarachan",
   "license": "BSD-3-Clause"
 }
-
