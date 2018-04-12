@@ -40,6 +40,8 @@
         $scope.selectedCells = "";
         $scope.cellsInfo = "";
 
+        $scope.gridColumns = [];
+
         // Hard-coded for some specific biomarkers.  TODO:  Make biomarkers selectable by user.
         $scope.S6 = 0;
         $scope.pS6235 = 0;
@@ -252,6 +254,32 @@
             executionService.requestAlgoRun($scope.selectedParameters, $scope.selectedAlgo);
         }
 
+        /*
+         * startingList should be a dictionary of strings mapped to indices.
+         * blackList is a list of strings that should be omitted from the original list.
+         * The items in blackList can be substrings such as prefixes or suffixes.
+         */
+        function filterList( startingList, blackList ) {
+            var filteredList = Object();
+            // Examine each item in startList relative to blackList.
+            for (var listElement in startingList) {
+                var keep=true;
+                for (var i=0; i<blackList.length; i++) {
+                    var omitElement = blackList[i];
+                    if (listElement.search(omitElement) != -1) {
+                        keep=false;
+                        //break;
+                    }
+                }
+                if (keep) {
+                    //filteredList.push(listElement);
+                    filteredList[listElement] = startingList[listElement];
+                }
+                console.log("Done with " + listElement);
+            }
+            return filteredList;
+        }
+
         $scope.clickResult = function(execItem,expandResult) {
             console.log("In clickResult, execItem is " + JSON.stringify(execItem));
             utilityFns.updateScroll($scope);
@@ -274,6 +302,15 @@
                             setGridColumns(cellList[0]);
                             $scope.gridData = cellList;
                             $scope.gridApi.grid.refresh();
+                            // Create a dictionary of the columns.
+                            $scope.gridColumns = Object();
+                            var firstRow = cellList[0];
+                            var i = 0;
+                            for(var param in firstRow) {
+                                $scope.gridColumns[param] = i++;
+                            }
+                            // Filter out many of the fields, just leaving mean biomarker intensities.
+                            $scope.gridColumns = filterList( $scope.gridColumns, ["Cell_ID", "Cell_Center", "Std", "Max", "Median", "Diversity", "R", "G", "B", "field"] );
                             // Cell calculations for full image.
                             $scope.calculateCellInfoInROI(0.0, 0.0, 2048.0, 2048.0);
                         }, function(err) {

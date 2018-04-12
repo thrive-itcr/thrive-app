@@ -236,6 +236,12 @@
                    <div class="col-lg-6 col-md-12 rt106-component fixed-height">
                        <section class="dataplotsection">
                            <div id="boxPlot"></div>
+                           <!-- test a parameter selector here -->
+                           <div id="parameterselector" class="selector">
+                               <select ng-model="selectedParameter1" ng-change="">
+                                   <option ng-repeat="(key1, value1) in gridColumns" value="{{ value1 }}">{{ key1 }} {{ value1 }}</option>
+                               </select>
+                           </div>
                        </section>
                    </div>
                    <div class="col-lg-6 col-md-12 rt106-component fixed-height">
