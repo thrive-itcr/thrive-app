@@ -121,13 +121,13 @@
                        <br>
 
                        <h5>New Pipeline: </h5>
-                       <input type="text" ng-model="newPipelineName">
+                       <input type="text" ng-model="newPipelineName" ng-init="newPipelineName='default'">
                        <button type="button"class="btn btn-primary btn-sm" ng-click="newPipelineID()">New</button>
 
                        <br><br>
 
                        <h5>Force Overwrite?
-                           <input type="checkbox" ng-model="forceOverwrite">
+                           <input type="checkbox" ng-model="forceOverwrite" ng-init="forceOverwrite=true">
                        </h5>
 
                        <!-- END PIPELINES -->
@@ -159,7 +159,20 @@
                                </tr>
                                <tr ng-repeat="param in selectedParameters">
                                    <td>{{ param.label }}</td>
-                                   <td><input type="{{param.widgetType}}" ng-model="param.default"></td>
+
+                                   <td ng-if="param.type === 'biomarker'">
+                                       <div class=”selector”>
+                                           <select ng-model="param.default" ng-init="param.default=0">
+                                               <option ng-repeat="(bkey,bvalue) in gridColumns" value="{{bvalue}}">
+                                                   {{bkey}}
+                                               </option>
+                                           </select>
+                                       </div>
+                                   </td>
+                                   <td ng-if="param.type !== 'biomarker'">
+                                        <input type="{{param.widgetType}}" ng-model="param.default">
+                                   </td>
+
                                    <td><input type="checkbox" ng-hide="param.required" ng-model="param.include"></td>
                                </tr>
                            </table>
@@ -187,26 +200,15 @@
 
                        <!-- IMAGE TOOLS -->
 
-                       <!--  DISPLAY SOME SAMPLE DATA -->
+                       <!--  DISPLAY SOME INFORMATION -->
 
                                <br>
                                {{ rectangleInfo }}
                                <br>
                                {{ cellsInfo }}
                                <br>
-                               <div id="cellinfo">
-                                   S6: {{ S6 }}
-                                   <br>
-                                   pS6235: {{ pS6235 }}
-                                   <br>
-                                   pERK: {{ pERK }}
-                                   <br>
-                                   p4EBP1: {{ p4EBP1 }}
-                                   <br>
-                                   Diversity: {{ diversity }}
-                               </div>
 
-                       <!--  DISPLAY SOME SAMPLE DATA -->
+                       <!--  DISPLAY SOME INFORMATION -->
 
                            </ul>
                            <br/>
@@ -218,7 +220,7 @@
                    <div class="col-lg-5 col-md-10 rt106-component fixed-height-tall">
 
                        <section class="viewersection">
-                           <div id="viewers" config-viewers number-of-viewers="6" viewer-width="600px" viewer-height="600px" ng-click="clickOnViewer()">
+                           <div id="viewers" config-viewers number-of-viewers="6" viewer-width="600px" viewer-height="600px" ng-click="updateRectangularROI()">
                            </div>
                        </section>
                    </div>
@@ -236,10 +238,25 @@
                    <div class="col-lg-6 col-md-12 rt106-component fixed-height">
                        <section class="dataplotsection">
                            <div id="boxPlot"></div>
-                           <!-- test a parameter selector here -->
-                           <div id="parameterselector" class="selector">
-                               <select ng-model="selectedParameter1" ng-change="">
-                                   <option ng-repeat="(key1, value1) in gridColumns" value="{{ value1 }}">{{ key1 }} {{ value1 }}</option>
+                           <!-- choose features to plot here -->
+                           <div class="selector parameterselector">
+                               <select ng-model="feature1name" ng-change="updateRectangularROI()">
+                                   <option ng-repeat="(key1, value1) in gridColumns" value="{{ key1 }}">{{ key1 }}</option>
+                               </select>
+                           </div>
+                           <div class="selector parameterselector">
+                               <select ng-model="feature2name" ng-change="updateRectangularROI()">
+                                   <option ng-repeat="(key2, value2) in gridColumns" value="{{ key2 }}">{{ key2 }}</option>
+                               </select>
+                           </div>
+                           <div class="selector parameterselector">
+                               <select ng-model="feature3name" ng-change="updateRectangularROI()">
+                                   <option ng-repeat="(key3, value3) in gridColumns" value="{{ key3 }}">{{ key3 }}</option>
+                               </select>
+                           </div>
+                           <div class="selector parameterselector">
+                               <select ng-model="feature4name" ng-change="updateRectangularROI()">
+                                   <option ng-repeat="(key4, value2) in gridColumns" value="{{ key4 }}">{{ key4 }}</option>
                                </select>
                            </div>
                        </section>

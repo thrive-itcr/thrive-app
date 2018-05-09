@@ -42,17 +42,22 @@
 
         $scope.gridColumns = [];
 
-        // Hard-coded for some specific biomarkers.  TODO:  Make biomarkers selectable by user.
-        $scope.S6 = 0;
-        $scope.pS6235 = 0;
-        $scope.pERK = 0;
-        $scope.p4EBP1 = 0;
+        // The UI can display plots and other information on a set of user-selected features.
+        $scope.feature1 = 0;
+        $scope.feature2 = 0;
+        $scope.feature3 = 0;
+        $scope.feature4 = 0;
         $scope.diversity = 0;
-        $scope.S6list=[];
-        $scope.pS6235list=[];
-        $scope.pERKlist=[];
-        $scope.p4EBP1list=[];
+        $scope.feature1list=[];
+        $scope.feature2list=[];
+        $scope.feature3list=[];
+        $scope.feature4list=[];
         $scope.diversityList=[];
+        $scope.feature1name="";
+        $scope.feature2name="";
+        $scope.feature3name="";
+        $scope.feature4name="";
+        $scope.feature1index=-1; // not currently used?
 
         /*
          * Initialization
@@ -172,6 +177,12 @@
                         if (sourceid > -1) {
                             $scope.pipelines.splice(sourceid, 1);
                         }
+                        // Add 'default' as the first choice in the list if it is not already there.
+                        var defid = $scope.pipelines.indexOf('default');
+                        if (defid == -1) {
+                            $scope.pipelines.unshift('default');
+                        }
+                        $scope.selectedPipeline='default';
                     }, function(err) {
                         var errorstring = querystring + ' returned an error.' + err.data;
                         $log.error(errorstring);
@@ -181,7 +192,7 @@
         }
 
         $scope.clickPipeline = function () {
-            // Placeholder.  All actions for clickPipeline() currently handled by AngularJS.
+            // Placeholder.
         }
 
         $scope.newPipelineID = function() {
@@ -310,7 +321,7 @@
                                 $scope.gridColumns[param] = i++;
                             }
                             // Filter out many of the fields, just leaving mean biomarker intensities.
-                            $scope.gridColumns = filterList( $scope.gridColumns, ["Cell_ID", "Cell_Center", "Std", "Max", "Median", "Diversity", "R", "G", "B", "field"] );
+                            $scope.gridColumns = filterList( $scope.gridColumns, ["Cell_ID", "Cell_Center", "Std", "Max", "Median", "Diversity", "^R$", "^G$", "^B$", "field"] );
                             // Cell calculations for full image.
                             $scope.calculateCellInfoInROI(0.0, 0.0, 2048.0, 2048.0);
                         }, function(err) {
@@ -355,48 +366,60 @@
             console.log("quartiles: " + sortedArray[quartile1] + ", " + sortedArray[quartile2] + ", " + sortedArray[quartile3]);
         }
 
-        $scope.clickOnViewer = function () {
-            console.log("Clicked on viewer!");
-            $scope.printRectangleInfo();
-            var rectangleToolState = cornerstoneTools.getToolState($scope.element, 'rectangleRoi');
-            var startX = rectangleToolState.data[0].handles.start.x;
-            var startY = rectangleToolState.data[0].handles.start.y;
-            var endX   = rectangleToolState.data[0].handles.end.x;
-            var endY   = rectangleToolState.data[0].handles.end.y;
-            $scope.calculateCellInfoInROI(startX, startY, endX, endY);
-        }
-
         // FUNCTIONS FOR QUERYING THE IMAGE USING A RECTANGULAR ROI.
 
-        $scope.printRectangleInfo = function () {
+        $scope.updateRectangularROI = function () {
+            console.log("Clicked on viewer!");
             $scope.frame = $("#imageWrapper1")[0];
             $scope.element = cornerstoneLayers.getImageElement($scope.frame);
-            //$scope.rectangleInfo = "no info now";
-            // TODO: catch errors in the lines below, which will happen if there is no rectangle.
-            var rectangleToolState = cornerstoneTools.getToolState($scope.element, 'rectangleRoi');
-            var startX = rectangleToolState.data[0].handles.start.x;
-            var startY = rectangleToolState.data[0].handles.start.y;
-            var endX   = rectangleToolState.data[0].handles.end.x;
-            var endY   = rectangleToolState.data[0].handles.end.y;
+            var boxDefined = true;
+            var startX, startY, endX, endY;
+            var rectangleToolState=undefined;
+            if ($scope.element === undefined) {
+                boxDefined=false;
+            } else {
+                rectangleToolState = cornerstoneTools.getToolState($scope.element, 'rectangleRoi');
+                if (rectangleToolState === undefined) {
+                    boxDefined=false;
+                } else {
+                    if (rectangleToolState.data.length === 0) {
+                        // This can happen if there had been a box but it was deleted.
+                        boxDefined=false;
+                    }
+                }
+            }
+            if (! boxDefined) {
+                // no bounding box defined
+                startX = 0;
+                startY = 0;
+                endX   = Infinity;
+                endY   = Infinity;
+            }
+            else {
+                startX = rectangleToolState.data[0].handles.start.x;
+                startY = rectangleToolState.data[0].handles.start.y;
+                endX   = rectangleToolState.data[0].handles.end.x;
+                endY   = rectangleToolState.data[0].handles.end.y;
+            }
             $scope.rectangleInfo = "( " + Math.round(startX) + " , " + Math.round(startY) +
-                    " ) to ( " + Math.round(endX) + " , " + Math.round(endY) + " )";
+                " ) to ( " + Math.round(endX) + " , " + Math.round(endY) + " )";
+            $scope.calculateCellInfoInROI(startX, startY, endX, endY);
         }
 
         $scope.calculateCellInfoInROI = function (startX, startY, endX, endY) {
             var cellX, cellY, cellID;
             $scope.selectedCells = "";
             var count = 0;
-            // Hard coded for some specific biomarkers:  S6, pS6235, pERK, p4EBP1.
-            var S6num, pS6235num, pERKnum, p4EBP1num, diversityNum;
-            var S6sum = 0;
-            var pS6235sum = 0;
-            var pERKsum = 0;
-            var p4EBP1sum = 0;
+            var feature1num, feature2num, feature3num, feature4num, diversityNum;
+            var feature1sum = 0;
+            var feature2sum = 0;
+            var feature3sum = 0;
+            var feature4sum = 0;
             var diversitySum = 0;
-            $scope.S6list = [];
-            $scope.pS6235list = [];
-            $scope.pERKlist = [];
-            $scope.p4EBP1list = [];
+            $scope.feature1list = [];
+            $scope.feature2list = [];
+            $scope.feature3list = [];
+            $scope.feature4list = [];
             $scope.diversityList = [];
             for (var i=0; i<$scope.gridData.length; i++) {
                 // The cell values should be numbers already, but in case they are not...
@@ -406,21 +429,26 @@
                 if (startX < cellX && cellX < endX && startY < cellY && cellY < endY) {
                     $scope.selectedCells = $scope.selectedCells + cellID + ",";
                     count = count + 1;
-                    S6num = Number($scope.gridData[i].S6_Nuc_Mean);
-                    S6sum  += S6num;
-                    $scope.S6list.push(S6num);
-
-                    pS6235num = Number($scope.gridData[i].pS6235_Nuc_Mean);
-                    pS6235sum  += pS6235num;
-                    $scope.pS6235list.push(pS6235num);
-
-                    pERKnum = Number($scope.gridData[i].pERK_Nuc_Mean);
-                    pERKsum += pERKnum;
-                    $scope.pERKlist.push(pERKnum);
-
-                    p4EBP1num = Number($scope.gridData[i].p4EBP1_Nuc_Mean);
-                    p4EBP1sum += p4EBP1num;
-                    $scope.p4EBP1list.push(p4EBP1num);
+                    if ($scope.feature1name !== "") {
+                        feature1num = Number($scope.gridData[i][$scope.feature1name]);
+                        feature1sum  += feature1num;
+                        $scope.feature1list.push(feature1num);
+                    }
+                    if ($scope.feature2name !== "") {
+                        feature2num = Number($scope.gridData[i][$scope.feature2name]);
+                        feature2sum  += feature2num;
+                        $scope.feature2list.push(feature2num);
+                    }
+                    if ($scope.feature3name !== "") {
+                        feature3num = Number($scope.gridData[i][$scope.feature3name]);
+                        feature3sum  += feature3num;
+                        $scope.feature3list.push(feature3num);
+                    }
+                    if ($scope.feature4name !== "") {
+                        feature4num = Number($scope.gridData[i][$scope.feature4name]);
+                        feature4sum  += feature4num;
+                        $scope.feature4list.push(feature4num);
+                    }
 
                     diversityNum = Number($scope.gridData[i].Diversity);
                     if (!isNaN(diversityNum)) {
@@ -429,15 +457,75 @@
                     }
                 }
             }
-            $scope.S6  = Math.round(S6sum / count);
-            $scope.pS6235  = Math.round(pS6235sum / count);
-            $scope.pERK = Math.round(pERKsum / count);
-            $scope.p4EBP1 = Math.round(p4EBP1sum / count);
+            $scope.feature1  = Math.round(feature1sum / count);
+            $scope.feature2  = Math.round(feature2sum / count);
+            $scope.feature3 = Math.round(feature3sum / count);
+            $scope.feature4 = Math.round(feature4sum / count);
             $scope.diversity = Math.round(10000 * diversitySum / count) / 10000; // Round to 3 decimal places.
             $scope.cellsInfo = "There are " + count + " selected cells.";
-            drawPlots();
+            $scope.drawPlots();
             drawHistogram();
         }
+
+        // FUNCTIONS FOR BIOMARKER BOX PLOTS
+
+        $scope.feature1list=[];
+        $scope.feature2list=[];
+        $scope.feature3list=[];
+        $scope.feature4list=[];
+
+        /*
+        // Box plot sample data for testing
+        for (var i = 0; i < 50; i ++)
+        {
+            $scope.feature1list[i] = Math.random();
+            $scope.feature2list[i] = 2*Math.random();
+            $scope.feature3list[i] = 5*Math.random();
+            $scope.feature4list[i] = 10*Math.random();
+        }
+        */
+
+        $scope.drawPlots = function () {
+            console.log("quartiles for " + $scope.feature1name + ":");
+            printQuartiles($scope.feature1list);
+            var feature1points = {
+                y: $scope.feature1list,
+                type: 'box',
+                name: $scope.feature1name,
+                boxpoints: false
+            };
+
+            var feature2points = {
+                y: $scope.feature2list,
+                type: 'box',
+                name: $scope.feature2name,
+                boxpoints: false
+            };
+
+            var feature3points = {
+                y: $scope.feature3list,
+                type: 'box',
+                name: $scope.feature3name,
+                boxpoints: false
+            };
+
+            var feature4points = {
+                y: $scope.feature4list,
+                type: 'box',
+                name: $scope.feature4name,
+                boxpoints: false
+            };
+
+            var data = [feature1points, feature2points, feature3points, feature4points];
+
+            var layout = {
+                title: 'Marker Expression within ROI',
+            }
+
+            Plotly.newPlot('boxPlot', data, layout);
+        }
+        $scope.drawPlots();
+
 
         // Initialize cell metrics and displays.
         $scope.gridData = [];
@@ -474,65 +562,6 @@
                 $scope.gridApi.grid.appScope.lastSelectedRow = row;
         })}
 
-
-        // FUNCTIONS FOR BIOMARKER BOX PLOTS
-
-        $scope.S6list=[];
-        $scope.pS6235list=[];
-        $scope.pERKlist=[];
-        $scope.p4EBP1list=[];
-
-        /*
-        // Box plot sample data for testing
-        for (var i = 0; i < 50; i ++)
-        {
-            $scope.S6list[i] = Math.random();
-            $scope.pS6235list[i] = 2*Math.random();
-            $scope.pERKlist[i] = 5*Math.random();
-            $scope.p4EBP1list[i] = 10*Math.random();
-        }
-        */
-
-        function drawPlots() {
-            console.log("quartiles for S6: ");
-            printQuartiles($scope.S6list);
-            var S6points = {
-                y: $scope.S6list,
-                type: 'box',
-                name: 'S6',
-                boxpoints: false
-            };
-
-            var pS6235points = {
-                y: $scope.pS6235list,
-                type: 'box',
-                name: 'pS6235',
-                boxpoints: false
-            };
-
-            var pERKpoints = {
-                y: $scope.pERKlist,
-                type: 'box',
-                name: 'pERK',
-                boxpoints: false
-            };
-
-            var p4EBP1points = {
-                y: $scope.p4EBP1list,
-                type: 'box',
-                name: 'p4EBP1',
-                boxpoints: false
-            };
-
-            var data = [S6points, pS6235points, pERKpoints, p4EBP1points];
-
-            var layout = {
-                title: 'Marker Expression within ROI',
-            }
-
-            Plotly.newPlot('boxPlot', data, layout);
-        }
-        drawPlots();
 
         // FUNCTIONS FOR DIVERSITY HISTOGRAM
 
