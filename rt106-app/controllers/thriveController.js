@@ -261,8 +261,23 @@
          * Function for when the Execute! button is clicked.
          */
         $scope.requestAlgoRun = function () {
+            console.log("In requestAlgoRun(), $scope.selectedParameters is " + JSON.stringify($scope.selectedParameters))
             executionService.autofillPathologyParameters($scope.selectedParameters, $scope.selectedSlide, $scope.selectedRegion, $scope.selectedChannel, $scope.selectedPipeline, $scope.forceOverwrite);
+            console.log("After autofillPathologyParameters(), $scope.selectedParameters is " + JSON.stringify($scope.selectedParameters) + ", $scope.selectedAlgo is " + $scope.selectedAlgo)
             executionService.requestAlgoRun($scope.selectedParameters, $scope.selectedAlgo);
+        }
+
+        $scope.requestAlgoRunAllRegions = function () {
+            console.log("In requestAlgoRunAllRegions(), $scope.selectedParameters is " + JSON.stringify($scope.selectedParameters))
+            executionService.autofillPathologyParameters($scope.selectedParameters, $scope.selectedSlide, $scope.selectedRegion, $scope.selectedChannel, $scope.selectedPipeline, $scope.forceOverwrite);
+            console.log("After autofillPathologyParameters(), $scope.selectedParameters is " + JSON.stringify($scope.selectedParameters) + ", $scope.selectedAlgo is " + $scope.selectedAlgo)
+            // Loop through regions, saved in $scope.regions.
+            for (var i=0; i<$scope.regions.length; i++) {
+                var thisRegion = $scope.regions[i];
+                $scope.selectedParameters["region"].default = thisRegion;
+                console.log("In requestAlgoRunAllRegions(), $scope.selectedParameters is " + JSON.stringify($scope.selectedParameters))
+                executionService.requestAlgoRun($scope.selectedParameters, $scope.selectedAlgo);
+            }
         }
 
         /*
